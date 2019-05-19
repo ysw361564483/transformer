@@ -34,6 +34,7 @@ class Transformer:
         self.hp = hp
         self.token2idx, self.idx2token = load_vocab(hp.vocab)
         self.embeddings = get_token_embeddings(self.hp.vocab_size, self.hp.d_model, zero_pad=True)
+        print('embeddings size =', self.hp.vocab_size)
 
     def encode(self, xs, training=True):
         '''
@@ -42,7 +43,9 @@ class Transformer:
         '''
         with tf.variable_scope("encoder", reuse=tf.AUTO_REUSE):
             x, seqlens, sents1 = xs
-
+            # x = tf.Print(x, [x], message='x =', summarize=10)
+            # print_sent = tf.Print(sents1, [sents1], message='sents1 =', summarize=3)
+            # with tf.control_dependencies([print_sent]):
             # embedding
             enc = tf.nn.embedding_lookup(self.embeddings, x) # (N, T1, d_model)
             enc *= self.hp.d_model**0.5 # scale
@@ -78,13 +81,15 @@ class Transformer:
         '''
         with tf.variable_scope("decoder", reuse=tf.AUTO_REUSE):
             decoder_inputs, y, seqlens, sents2 = ys
-
+            # decoder_inputs = tf.Print(decoder_inputs, [decoder_inputs], 
+                # message='decoder_inputs =', summarize=10)
             # embedding
             dec = tf.nn.embedding_lookup(self.embeddings, decoder_inputs)  # (N, T2, d_model)
             dec *= self.hp.d_model ** 0.5  # scale
 
             dec += positional_encoding(dec, self.hp.maxlen2)
             dec = tf.layers.dropout(dec, self.hp.dropout_rate, training=training)
+            # dec = tf.Print(dec, [dec], message='dec =', summarize=10)
 
             # Blocks
             for i in range(self.hp.num_blocks):
@@ -111,6 +116,7 @@ class Transformer:
                     ### Feed Forward
                     dec = ff(dec, num_units=[self.hp.d_ff, self.hp.d_model])
 
+        # dec = tf.Print(dec, [dec], message='dec_finally =', summarize=10)
         # Final linear projection (embedding weights are shared)
         weights = tf.transpose(self.embeddings) # (d_model, vocab_size)
         logits = tf.einsum('ntd,dk->ntk', dec, weights) # (N, T2, vocab_size)
@@ -128,19 +134,30 @@ class Transformer:
         '''
         # forward
         memory, sents1 = self.encode(xs)
+        # memory = tf.Print(memory, [memory], message='memory =', summarize=10)
         logits, preds, y, sents2 = self.decode(ys, memory)
+        # logits = tf.Print(logits, [logits], message='logits =', summarize=10)
 
+        print('train logits.shape, y.shape =', logits.shape, y.shape)
         # train scheme
         y_ = label_smoothing(tf.one_hot(y, depth=self.hp.vocab_size))
+        # logits = tf.Print(logits, [logits], message='logits =', summarize=10)
+        # y_ = tf.Print(y_, [y_], message='y_ =', summarize=10)
         ce = tf.nn.softmax_cross_entropy_with_logits_v2(logits=logits, labels=y_)
         nonpadding = tf.to_float(tf.not_equal(y, self.token2idx["<pad>"]))  # 0: <pad>
         loss = tf.reduce_sum(ce * nonpadding) / (tf.reduce_sum(nonpadding) + 1e-7)
+        # loss = tf.Print(loss, [loss], message='loss =', summarize=10)
 
         global_step = tf.train.get_or_create_global_step()
         lr = noam_scheme(self.hp.lr, global_step, self.hp.warmup_steps)
         optimizer = tf.train.AdamOptimizer(lr)
-        train_op = optimizer.minimize(loss, global_step=global_step)
-
+        gradients = optimizer.compute_gradients(loss)
+        # # print_grad = tf.print('gradients =', gradients, summarize=10)
+        # # with tf.control_dependencies([print_grad]):
+        clip_grads = [(tf.clip_by_value(grad, -100., 100.), var) for grad, var in gradients]
+        train_op = optimizer.apply_gradients(clip_grads, global_step=global_step)
+        # train_op = optimizer.minimize(loss, global_step=global_step)
+               
         tf.summary.scalar('lr', lr)
         tf.summary.scalar("loss", loss)
         tf.summary.scalar("global_step", global_step)
@@ -156,7 +173,7 @@ class Transformer:
         y_hat: (N, T2)
         '''
         decoder_inputs, y, y_seqlen, sents2 = ys
-
+        # decoder_inputs (N, 1)
         decoder_inputs = tf.ones((tf.shape(xs[0])[0], 1), tf.int32) * self.token2idx["<s>"]
         ys = (decoder_inputs, y, y_seqlen, sents2)
 
@@ -166,9 +183,27 @@ class Transformer:
         for _ in tqdm(range(self.hp.maxlen2)):
             logits, y_hat, y, sents2 = self.decode(ys, memory, False)
             if tf.reduce_sum(y_hat, 1) == self.token2idx["<pad>"]: break
+            # # print('y_hat.shape = ', y_hat.shape)
 
             _decoder_inputs = tf.concat((decoder_inputs, y_hat), 1)
+
+            # print('_decoder_inputs.shape =', _decoder_inputs.shape)
+            # _decoder_inputs = tf.cond(
+            #     tf.cast(tf.reduce_sum(y_hat, 1) == self.token2idx["<pad>"], tf.bool),
+            #     lambda: _decoder_inputs , 
+            #     lambda: tf.concat((decoder_inputs, y_hat), 1))
             ys = (_decoder_inputs, y, y_seqlen, sents2)
+            # print('ys =', ys)
+        # loss
+        
+        print('eval logits.shape, y.shape =', logits.shape, y.shape)
+        y_ = label_smoothing(tf.one_hot(y, depth=self.hp.vocab_size))
+        # logits = tf.Print(logits, [logits], message='logits =', summarize=10)
+        # y_ = tf.Print(y_, [y_], message='y_ =', summarize=10)
+        ce = tf.nn.softmax_cross_entropy_with_logits_v2(
+            logits=logits[:,:tf.shape(y_)[1],:], labels=y_)
+        nonpadding = tf.to_float(tf.not_equal(y, self.token2idx["<pad>"]))  # 0: <pad>
+        loss = tf.reduce_sum(ce * nonpadding) / (tf.reduce_sum(nonpadding) + 1e-7)
 
         # monitor a random sample
         n = tf.random_uniform((), 0, tf.shape(y_hat)[0]-1, tf.int32)
@@ -181,5 +216,5 @@ class Transformer:
         tf.summary.text("sent2", sent2)
         summaries = tf.summary.merge_all()
 
-        return y_hat, summaries
+        return y_hat, summaries, loss
 

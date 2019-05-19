@@ -35,6 +35,7 @@ def convert_idx_to_token_tensor(inputs, idx2token):
     1d string tensor.
     '''
     def my_func(inputs):
+        # print('utils-my_func inputs =', inputs)
         return " ".join(idx2token[elem] for elem in inputs)
 
     return tf.py_func(my_func, [inputs], tf.string)
@@ -67,9 +68,10 @@ def postprocess(hypotheses, idx2token):
     '''
     _hypotheses = []
     for h in hypotheses:
-        sent = "".join(idx2token[idx] for idx in h)
+        sent = " ".join(idx2token[idx] for idx in h) # 注释掉下一句后这句要用 空格.join
+        print('sent =', sent)
         sent = sent.split("</s>")[0].strip()
-        sent = sent.replace("▁", " ") # remove bpe symbols
+        # sent = sent.replace("▁", " ") # remove bpe symbols
         _hypotheses.append(sent.strip())
     return _hypotheses
 
@@ -133,7 +135,7 @@ def get_hypotheses(num_batches, num_samples, sess, tensor, dict):
     num_batches: scalar.
     num_samples: scalar.
     sess: tensorflow sess object
-    tensor: target tensor to fetch
+    tensor: target tensor to fetch -- y_hat
     dict: idx2token dictionary
 
     Returns
@@ -161,11 +163,13 @@ def calc_bleu(ref, translation):
         fout.write("\n{}".format(bleu_score_report))
     try:
         score = re.findall("BLEU = ([^,]+)", bleu_score_report)[0]
+        logging.info("BLEU = {}".format(score))
         new_translation = translation + "B{}".format(score)
         os.system("mv {} {}".format(translation, new_translation))
         os.remove(translation)
 
-    except: pass
+    except:
+        logging.warning("calc bleu failed!")
     os.remove("temp")
 
 

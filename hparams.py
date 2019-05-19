@@ -4,28 +4,32 @@ class Hparams:
     parser = argparse.ArgumentParser()
 
     # prepro
-    parser.add_argument('--vocab_size', default=32000, type=int)
+    parser.add_argument('--vocab_size', default=10000, type=int)
 
     # train
     ## files
-    parser.add_argument('--train1', default='iwslt2016/segmented/train.de.bpe',
+    parser.add_argument('--train1', default='./data/train/question_raw.txt',
                              help="german training segmented data")
-    parser.add_argument('--train2', default='iwslt2016/segmented/train.en.bpe',
+    parser.add_argument('--train2', default='./data/train/logical_form_totally_tokenize.txt',
                              help="english training segmented data")
-    parser.add_argument('--eval1', default='iwslt2016/segmented/eval.de.bpe',
+    parser.add_argument('--eval1', default='./data/dev/question_raw.txt',
                              help="german evaluation segmented data")
-    parser.add_argument('--eval2', default='iwslt2016/segmented/eval.en.bpe',
+    parser.add_argument('--eval2', default='./data/dev/logical_form_totally_tokenize.txt',
                              help="english evaluation segmented data")
-    parser.add_argument('--eval3', default='iwslt2016/prepro/eval.en',
+    parser.add_argument('--eval3', default='./data/dev/logical_form_raw.txt',
                              help="english evaluation unsegmented data")
 
     ## vocabulary
-    parser.add_argument('--vocab', default='iwslt2016/segmented/bpe.vocab',
+    parser.add_argument('--vocab', default='./data/train/vocab/vocab_for_question_raw.txt',
                         help="vocabulary file path")
+    parser.add_argument('--vocab1', default='./data/train/vocab/vocab_for_logical_form_totally_tokenize.txt',
+                        help="vocabulary file path")
+    # parser.add_argument('--vocab_size', default=50000,
+    #                     help="vocabulary size")
 
     # training scheme
-    parser.add_argument('--batch_size', default=128, type=int)
-    parser.add_argument('--eval_batch_size', default=128, type=int)
+    parser.add_argument('--batch_size', default=64, type=int)
+    parser.add_argument('--eval_batch_size', default=64, type=int)
 
     parser.add_argument('--lr', default=0.0003, type=float, help="learning rate")
     parser.add_argument('--warmup_steps', default=4000, type=int)
@@ -56,5 +60,5 @@ class Hparams:
     parser.add_argument('--test2', default='iwslt2016/prepro/test.en',
                         help="english test data")
     parser.add_argument('--ckpt', help="checkpoint file path")
-    parser.add_argument('--test_batch_size', default=128, type=int)
+    parser.add_argument('--test_batch_size', default=64, type=int)
     parser.add_argument('--testdir', default="test/1", help="test result dir")
