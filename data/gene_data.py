@@ -121,38 +121,41 @@ def test():
 
 
 def make_all_vocab():
-	if not os.path.exists("train/vocab"):
-		os.mkdir("train/vocab")
+	if not os.path.exists("./vocab"):
+		os.mkdir("./vocab")
+	makeVocab(['./train.src.txt'], './train.vocab.src.txt')
+	makeVocab(['./train.tgt.txt'], './train.vocab.tgt.txt')
+	makeVocab(['./valid.src.txt'], './valid.vocab.src.txt')
+	makeVocab(['./valid.tgt.txt'], './valid.vocab.tgt.txt')
+	# makeVocab(["train/question_raw.txt"], "train/vocab/vocab_for_question_raw.txt")
+	# makeVocab(["train/logical_form_raw.txt"], "train/vocab/vocab_for_logical_form_raw.txt")
+	# makeVocab(["train/logical_form_totally_tokenize.txt"], "train/vocab/vocab_for_logical_form_totally_tokenize.txt")
+	# makeVocab(["train/logical_form_tokenize_just_some_underline.txt"], "train/vocab/vocab_for_logical_form_tokenize_just_some_underline.txt")
+	# makeVocab(["train/logical_form_tokenize_underline.txt"], "train/vocab/vocab_for_logical_form_tokenize_underline.txt")
 
-	makeVocab(["train/question_raw.txt"], "train/vocab/vocab_for_question_raw.txt")
-	makeVocab(["train/logical_form_raw.txt"], "train/vocab/vocab_for_logical_form_raw.txt")
-	makeVocab(["train/logical_form_totally_tokenize.txt"], "train/vocab/vocab_for_logical_form_totally_tokenize.txt")
-	makeVocab(["train/logical_form_tokenize_just_some_underline.txt"], "train/vocab/vocab_for_logical_form_tokenize_just_some_underline.txt")
-	makeVocab(["train/logical_form_tokenize_underline.txt"], "train/vocab/vocab_for_logical_form_tokenize_underline.txt")
 
+	# if not os.path.exists("dev/vocab"):
+	# 	os.mkdir("dev/vocab")
 
-	if not os.path.exists("dev/vocab"):
-		os.mkdir("dev/vocab")
-
-	makeVocab(["dev/question_raw.txt"], "dev/vocab/vocab_for_question_raw.txt")
-	makeVocab(["dev/logical_form_raw.txt"], "dev/vocab/vocab_for_logical_form_raw.txt")
-	makeVocab(["dev/logical_form_totally_tokenize.txt"], "dev/vocab/vocab_for_logical_form_totally_tokenize.txt")
-	makeVocab(["dev/logical_form_tokenize_just_some_underline.txt"], "dev/vocab/vocab_for_logical_form_tokenize_just_some_underline.txt")
-	makeVocab(["dev/logical_form_tokenize_underline.txt"], "dev/vocab/vocab_for_logical_form_tokenize_underline.txt")
+	# makeVocab(["dev/question_raw.txt"], "dev/vocab/vocab_for_question_raw.txt")
+	# makeVocab(["dev/logical_form_raw.txt"], "dev/vocab/vocab_for_logical_form_raw.txt")
+	# makeVocab(["dev/logical_form_totally_tokenize.txt"], "dev/vocab/vocab_for_logical_form_totally_tokenize.txt")
+	# makeVocab(["dev/logical_form_tokenize_just_some_underline.txt"], "dev/vocab/vocab_for_logical_form_tokenize_just_some_underline.txt")
+	# makeVocab(["dev/logical_form_tokenize_underline.txt"], "dev/vocab/vocab_for_logical_form_tokenize_underline.txt")
 
 
 def main():
-	rewrite_raw("MSParS.train", "train")
-	rewrite_raw("MSParS.dev", "dev")
+	# rewrite_raw("MSParS.train", "train")
+	# rewrite_raw("MSParS.dev", "dev")
 
-	tokenize_totally("train/logical_form_raw.txt", "train/logical_form_totally_tokenize.txt")
-	tokenize_totally("dev/logical_form_raw.txt", "dev/logical_form_totally_tokenize.txt")
+	# tokenize_totally("train/logical_form_raw.txt", "train/logical_form_totally_tokenize.txt")
+	# tokenize_totally("dev/logical_form_raw.txt", "dev/logical_form_totally_tokenize.txt")
 
-	tokenize_just_some_underline("train/logical_form_raw.txt", "train/logical_form_tokenize_just_some_underline.txt")
-	tokenize_just_some_underline("dev/logical_form_raw.txt", "dev/logical_form_tokenize_just_some_underline.txt")
+	# tokenize_just_some_underline("train/logical_form_raw.txt", "train/logical_form_tokenize_just_some_underline.txt")
+	# tokenize_just_some_underline("dev/logical_form_raw.txt", "dev/logical_form_tokenize_just_some_underline.txt")
 
-	tokenize_underline("train/logical_form_raw.txt", "train/logical_form_tokenize_underline.txt")
-	tokenize_underline("dev/logical_form_raw.txt", "dev/logical_form_tokenize_underline.txt")
+	# tokenize_underline("train/logical_form_raw.txt", "train/logical_form_tokenize_underline.txt")
+	# tokenize_underline("dev/logical_form_raw.txt", "dev/logical_form_tokenize_underline.txt")
 
 	make_all_vocab()
 

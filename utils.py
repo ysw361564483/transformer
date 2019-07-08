@@ -69,9 +69,10 @@ def postprocess(hypotheses, idx2token):
     _hypotheses = []
     for h in hypotheses:
         sent = " ".join(idx2token[idx] for idx in h) # 注释掉下一句后这句要用 空格.join
-        print('sent =', sent)
+        # print('sent =', sent)
         sent = sent.split("</s>")[0].strip()
         # sent = sent.replace("▁", " ") # remove bpe symbols
+        sent = sent.replace('<s>', '')
         _hypotheses.append(sent.strip())
     return _hypotheses
 
@@ -166,7 +167,7 @@ def calc_bleu(ref, translation):
         logging.info("BLEU = {}".format(score))
         new_translation = translation + "B{}".format(score)
         os.system("mv {} {}".format(translation, new_translation))
-        os.remove(translation)
+        # os.remove(translation)
 
     except:
         logging.warning("calc bleu failed!")

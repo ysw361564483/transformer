@@ -4,26 +4,31 @@ class Hparams:
     parser = argparse.ArgumentParser()
 
     # prepro
-    parser.add_argument('--vocab_size', default=10000, type=int)
+    parser.add_argument('--vocab_size', default=32000, type=int)
 
     # train
     ## files
-    parser.add_argument('--train1', default='./data/train/question_raw.txt',
+    parser.add_argument('--train1', default='./data/train.src.txt',
                              help="german training segmented data")
-    parser.add_argument('--train2', default='./data/train/logical_form_totally_tokenize.txt',
+    parser.add_argument('--train2', default='./data/train.tgt.txt',
                              help="english training segmented data")
-    parser.add_argument('--eval1', default='./data/dev/question_raw.txt',
+    parser.add_argument('--eval1', default='./data/valid.src.txt',
                              help="german evaluation segmented data")
-    parser.add_argument('--eval2', default='./data/dev/logical_form_totally_tokenize.txt',
+    parser.add_argument('--eval2', default='./data/valid.tgt.txt',
                              help="english evaluation segmented data")
-    parser.add_argument('--eval3', default='./data/dev/logical_form_raw.txt',
+    parser.add_argument('--eval3', default='./data/valid.tgt.txt',
                              help="english evaluation unsegmented data")
 
     ## vocabulary
-    parser.add_argument('--vocab', default='./data/train/vocab/vocab_for_question_raw.txt',
+    parser.add_argument('--vocab', default='./data/train.vocab.src.txt',
                         help="vocabulary file path")
-    parser.add_argument('--vocab1', default='./data/train/vocab/vocab_for_logical_form_totally_tokenize.txt',
+    parser.add_argument('--vocab1', default='./data/train.vocab.tgt.txt',
                         help="vocabulary file path")
+    parser.add_argument('--vocab2', default='./data/valid.vocab.src.txt',
+                        help="vocabulary file path")
+    parser.add_argument('--vocab3', default='./data/valid.vocab.tgt.txt',
+                        help="vocabulary file path")
+
     # parser.add_argument('--vocab_size', default=50000,
     #                     help="vocabulary size")
 
@@ -31,7 +36,7 @@ class Hparams:
     parser.add_argument('--batch_size', default=64, type=int)
     parser.add_argument('--eval_batch_size', default=64, type=int)
 
-    parser.add_argument('--lr', default=0.0003, type=float, help="learning rate")
+    parser.add_argument('--lr', default=3e-4, type=float, help="learning rate")
     parser.add_argument('--warmup_steps', default=4000, type=int)
     parser.add_argument('--logdir', default="log/1", help="log directory")
     parser.add_argument('--num_epochs', default=20, type=int)

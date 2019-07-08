@@ -26,7 +26,8 @@ def load_vocab(vocab_fpath):
     # vocab = [line.split() for line in open(vocab_fpath, 'r').read().splitlines()]
     # token2idx = {token: idx for token, idx in vocab}
     # idx2token = {idx: token for token, idx in vocab}
-    dict_name = str(vocab_fpath).split('/')[-1].split('.')[0]+'.pkl'
+    vocab_fpath_list = str(vocab_fpath).split('/')
+    dict_name = vocab_fpath_list[-1]+'.pkl'
     print('Building ' +dict_name+ ' vocab')
     if os.path.exists(dict_name):
         with open(dict_name, 'rb') as f:
@@ -38,7 +39,7 @@ def load_vocab(vocab_fpath):
     vocab = [line.split()[0] for line in open(vocab_fpath, 'r').read().splitlines()]
     for i in ['</s>', '<s>', '<unk>', '<pad>']:
         vocab.insert(0, i)
-    vocab = vocab[:10000]
+    vocab = vocab[:32000]
     token2idx = {token: idx for idx, token in enumerate(vocab)}
     idx2token = {idx: token for idx, token in enumerate(vocab)}
     # token2idx.update({'<s>':len(token2idx)})
@@ -53,7 +54,7 @@ def load_vocab(vocab_fpath):
     with open(dict_name, 'wb') as f:
         pickle.dump(token2idx, f, True)
         pickle.dump(idx2token, f, True)
-    with open('dict_'+str(vocab_fpath).split('/')[-1], 'w') as f:
+    with open('dict_'+dict_name, 'w') as f:
         for item in token2idx.items():
             f.write(str(item))
             f.write('\n')
@@ -65,7 +66,7 @@ def load_data(fpath1, fpath2, maxlen1, maxlen2):
     fpath2: target file path. string.
     maxlen1: source sent maximum length. scalar.
     maxlen2: target sent maximum length. scalar.
-
+重大
     Returns
     sents1: list of source sents
     sents2: list of target sents
@@ -158,7 +159,7 @@ def input_fn(sents1, sents2, vocab_fpath, vocab_fpath1, batch_size, shuffle=Fals
         args=(sents1, sents2, vocab_fpath, vocab_fpath1))  # <- arguments for generator_fn. converted to np string arrays
 
     if shuffle: # for training
-        dataset = dataset.shuffle(128*batch_size)
+        dataset = dataset.shuffle(len(sents1))
 
     dataset = dataset.repeat()  # iterate forever
     dataset = dataset.padded_batch(batch_size, shapes, paddings).prefetch(1)
